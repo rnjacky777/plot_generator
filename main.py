@@ -5,6 +5,7 @@ import logging
 from util.barplot_1 import draw_bar_plot
 from util.barplot_2 import draw_bar_plot_2
 from util.pie import draw_pie
+from models.enums import PlotType
 
 logging.basicConfig(level=logging.INFO,
                     format="%(asctime)s - %(levelname)s - %(message)s")
@@ -18,7 +19,8 @@ def import_sheet_info():
     logging.info("Read data frame")
 
     # each title in title list default is None
-    config.title_list = {title: "none" for title in config.df.columns.tolist()}
+    config.title_list = {
+        title: PlotType.NONE for title in config.df.columns.tolist()}
     logging.info(f"Initial title list: {config.title_list}")
 
     entry.pack_forget()
@@ -35,16 +37,16 @@ def output_pic():
     for item in config.title_list:
         try:
             match config.title_list[item]:
-                case "pie":
+                case PlotType.PIE:
                     draw_pie(dataframe=config.df,
                              colors=config.colors, title=item)
-                case "bar1":
+                case PlotType.BAR_1:
                     draw_bar_plot(dataframe=config.df,
                                   colors=config.colors, title=item)
-                case "bar2":
+                case PlotType.BAR_2:
                     draw_bar_plot_2(dataframe=config.df,
                                     colors=config.colors, title=item)
-                case "none":
+                case PlotType.NONE:
                     pass
                 case _:
                     raise ValueError(
@@ -58,19 +60,18 @@ def display_title_list():
     for widget in scrollable_frame.winfo_children():
         widget.destroy()
 
-    chart_options = ["pie", "bar1", "bar2", "none"]
+    chart_options = [PlotType.PIE, PlotType.BAR_1,
+                     PlotType.BAR_2, PlotType.NONE]
     for item in config.title_list:
         var = tk.StringVar(root)
         var.set(config.title_list[item])
         frame_item = tk.Frame(scrollable_frame)
 
         dropdown = tk.OptionMenu(frame_item, var, *chart_options)
-        dropdown.pack(side="left", fill="x", pady=5, padx=10) 
-
+        dropdown.pack(side="left", fill="x", pady=5, padx=10)
 
         var.trace_add("write", lambda name, index, mode, var=var,
                       item=item: update_selection(item, var.get()))
-
 
         title_label = tk.Label(frame_item, text=item, font=("Arial", 10))
         title_label.pack(side="left", padx=10)
@@ -99,7 +100,7 @@ def create_scrollable_frame(parent):
         lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
     )
 
-    canvas.bind_all("<MouseWheel>", _on_mouse_wheel) 
+    canvas.bind_all("<MouseWheel>", _on_mouse_wheel)
     canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
     canvas.configure(yscrollcommand=scrollbar.set)
 
